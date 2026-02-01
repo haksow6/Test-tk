@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Locator - Toko Kami</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .auth-container {
+            max-width: 420px;
+            margin: 80px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .auth-container h2 {
+            color: #667eea;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .auth-container p {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .user-info {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+
+        .user-details {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .user-email {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .logout-btn {
+            background: #f5576c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background: #e04556;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        #map {
+            height: 400px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .settings-section {
+            margin-bottom: 25px;
+        }
+
+        .settings-section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .input-group input,
+        .input-group textarea,
+        .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-group textarea {
+            min-height: 80px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+            width: auto;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+
+        .menu-item,
+        .event-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .menu-item h4,
+        .event-item h4 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .menu-item p,
+        .event-item p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .leaflet-popup-content-wrapper {
+            border-radius: 10px;
+        }
+
+        .popup-content {
+            text-align: center;
+            padding: 10px;
+        }
+
+        .popup-content h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .popup-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .popup-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .modal-header h2 {
+            color: #667eea;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 30px;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s;
+        }
+
+        .close-modal:hover {
+            color: #333;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .status-open {
+            background: #4caf50;
+            color: white;
+        }
+
+        .status-closed {
+            background: #f44336;
+            color: white;
+        }
+
+        .admin-section {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+            margin-bottom: 20px;
+        }
+
+        .admin-section h3 {
+            color: #856404;
+            margin-bottom: 5px;
+        }
+
+        .read-only-notice {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+            margin-bottom: 20px;
+            color: #1565c0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .switch-text {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+
+        .switch-link {
+            color: #667eea;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: underline;
+        }
+
+        .switch-link:hover {
+            color: #764ba2;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .success-message {
+            background: #efe;
+            color: #3c3;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Auth Screen -->
+    <div id="authScreen" class="auth-container">
+        <h2>🏪 Store Locator</h2>
+        <p>Sistem Manajemen Toko</p>
+
+        <div class="tab-buttons">
+            <button class="tab-btn active" onclick="showLoginForm()">Login</button>
+            <button class="tab-btn" onclick="showRegisterForm()">Daftar</button>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+
+        <!-- Login Form -->
+        <div id="loginForm">
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="loginEmail" placeholder="email@example.com">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" placeholder="Masukkan password" onkeypress="if(event.key==='Enter') login()">
+            </div>
+            <button class="btn" onclick="login()">Login</button>
+        </div>
+
+        <!-- Register Form -->
+        <div id="registerForm" class="hidden">
+            <div class="input-group">
+                <label>Nama Lengkap</label>
+                <input type="text" id="registerName" placeholder="Nama Anda">
+            </div>
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="registerEmail" placeholder="email@example.com">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="registerPassword" placeholder="Minimal 6 karakter">
+            </div>
+            <div class="input-group">
+                <label>Konfirmasi Password</label>
+                <input type="password" id="registerPasswordConfirm" placeholder="Ulangi password" onkeypress="if(event.key==='Enter') register()">
+            </div>
+            <button class="btn" onclick="register()">Daftar</button>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="mainApp" class="hidden">
+        <div class="container">
+            <h1>🏪 Store Locator</h1>
+            
+            <!-- User Info Bar -->
+            <div class="user-info">
+                <div class="user-details">
+                    <img id="userPhoto" src="" alt="User">
+                    <div>
+                        <div class="user-name" id="userName"></div>
+                        <div class="user-email" id="userEmail"></div>
+                        <div style="font-size: 11px; color: #999; margin-top: 2px;" id="userRole"></div>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+            
+            <div class="main-content">
+                <!-- Map Section -->
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h2 style="color: #667eea; margin: 0;">📍 Lokasi Toko</h2>
+                        <span id="statusBadge" class="status-badge status-open">● BUKA</span>
+                    </div>
+                    <div id="map"></div>
+                    
+                    <div class="settings-section" style="margin-top: 20px;">
+                        <div id="adminControls">
+                            <div class="admin-section">
+                                <h3>⚙️ Mode Admin</h3>
+                                <p style="color: #856404; font-size: 14px;">Anda memiliki akses penuh</p>
+                            </div>
+                            
+                            <h2>Status Toko</h2>
+                            <div class="input-group">
+                                <select id="storeStatus" onchange="updateStoreStatus()">
+                                    <option value="open">Buka</option>
+                                    <option value="closed">Tutup</option>
+                                </select>
+                            </div>
+                            
+                            <h2>Lokasi Toko</h2>
+                            <div class="input-group">
+                                <label>Nama Toko</label>
+                                <input type="text" id="storeName" value="Toko Kami" placeholder="Nama Toko">
+                            </div>
+                            <button class="btn btn-small" onclick="updateStoreName()">Update Nama</button>
+                            <p style="color: #999; font-size: 12px; margin-top: 10px;">💡 Klik pada peta untuk mengubah lokasi</p>
+                        </div>
+                        
+                        <div id="readOnlyNotice" class="read-only-notice hidden">
+                            <strong>ℹ️ Mode Pengunjung</strong>
+                            <p style="margin-top: 5px; font-size: 14px;">Anda hanya bisa melihat informasi toko.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Section -->
+                <div class="card">
+                    <!-- Menu Settings -->
+                    <div class="settings-section">
+                        <h2>🍽️ Menu</h2>
+                        
+                        <div id="menuAdminControls">
+                            <div class="input-group">
+                                <label>Nama Menu</label>
+                                <input type="text" id="menuName" placeholder="Contoh: Nasi Goreng">
+                            </div>
+                            <div class="input-group">
+                                <label>Harga</label>
+                                <input type="text" id="menuPrice" placeholder="Contoh: Rp 25.000">
+                            </div>
+                            <div class="input-group">
+                                <label>Deskripsi</label>
+                                <textarea id="menuDesc" placeholder="Deskripsi menu..."></textarea>
+                            </div>
+                            <button class="btn btn-success btn-small" onclick="addMenu()">+ Tambah Menu</button>
+                        </div>
+                        
+                        <div id="menuList" style="margin-top: 20px;">
+                            <div class="empty-state">
+                                <p>Belum ada menu tersedia.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Event Settings -->
+                    <div class="settings-section">
+                        <h2>🎉 Event</h2>
+                        
+                        <div id="eventAdminControls">
+                            <div class="input-group">
+                                <label>Nama Event</label>
+                                <input type="text" id="eventName" placeholder="Contoh: Promo Akhir Tahun">
+                            </div>
+                            <div class="input-group">
+                                <label>Tanggal</label>
+                                <input type="text" id="eventDate" placeholder="Contoh: 1-31 Des 2024">
+                            </div>
+                            <div class="input-group">
+                                <label>Deskripsi</label>
+                                <textarea id="eventDesc" placeholder="Deskripsi event..."></textarea>
+                            </div>
+                            <button class="btn btn-success btn-small" onclick="addEvent()">+ Tambah Event</button>
+                        </div>
+                        
+                        <div id="eventList" style="margin-top: 20px;">
+                            <div class="empty-state">
+                                <p>Belum ada event tersedia.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menu Modal -->
+    <div id="menuModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📋 Menu Kami</h2>
+                <button class="close-modal" onclick="closeModal('menuModal')">&times;</button>
+            </div>
+            <div id="menuModalContent"></div>
+        </div>
+    </div>
+
+    <!-- Event Modal -->
+    <div id="eventModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🎊 Event Kami</h2>
+                <button class="close-modal" onclick="closeModal('eventModal')">&times;</button>
+            </div>
+            <div id="eventModalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // KONFIGURASI - EDIT EMAIL ADMIN DI SINI
+        // ============================================
+        
+        const ADMIN_EMAIL = 'admin@gmail.com';  // Email admin yang punya akses penuh
+        
+        // ============================================
+        // END KONFIGURASI
+        // ============================================
+
+        let currentUser = null;
+        let isAdmin = false;
+
+        // Initialize data
+        let storeData = {
+            lat: -6.200000,
+            lng: 106.816666,
+            name: 'Toko Kami',
+            status: 'open',
+            menus: [],
+            events: []
+        };
+
+        // Switch between login and register forms
+        function showLoginForm() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('registerForm').classList.add('hidden');
+            document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            document.querySelectorAll('.tab-btn')[1].classList.remove('active');
+            hideMessages();
+        }
+
+        function showRegisterForm() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+            document.querySelectorAll('.tab-btn')[0].classList.remove('active');
+            document.querySelectorAll('.tab-btn')[1].classList.add('active');
+            hideMessages();
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        function hideMessages() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        // Register function
+        function register() {
+            const name = document.getElementById('registerName').value.trim();
+            const email = document.getElementById('registerEmail').value.trim().toLowerCase();
+            const password = document.getElementById('registerPassword').value;
+            const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+
+            // Validation
+            if (!name || !email || !password || !passwordConfirm) {
+                showError('Semua field harus diisi!');
+                return;
+            }
+
+            if (!email.includes('@')) {
+                showError('Format email tidak valid!');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('Password minimal 6 karakter!');
+                return;
+            }
+
+            if (password !== passwordConfirm) {
+                showError('Password tidak cocok!');
+                return;
+            }
+
+            // Get existing users
+            let users = JSON.parse(localStorage.getItem('users') || '[]');
+
+            // Check if email already exists
+            if (users.find(u => u.email === email)) {
+                showError('Email sudah terdaftar!');
+                return;
+            }
+
+            // Add new user
+            users.push({
+                name: name,
+                email: email,
+                password: password,
+                createdAt: new Date().toISOString()
+            });
+
+            localStorage.setItem('users', JSON.stringify(users));
+
+            // Clear form
+            document.getElementById('registerName').value = '';
+            document.getElementById('registerEmail').value = '';
+            document.getElementById('registerPassword').value = '';
+            document.getElementById('registerPasswordConfirm').value = '';
+
+            showSuccess('✅ Akun berhasil dibuat! Silakan login.');
+            
+            setTimeout(() => {
+                showLoginForm();
+            }, 1500);
+        }
+
+        // Login function
+        function login() {
+            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                showError('Email dan password harus diisi!');
+                return;
+            }
+
+            // Get users
+            let users = JSON.parse(localStorage.getItem('users') || '[]');
+
+            // Find user
+            const user = users.find(u => u.email === email && u.password === password);
+
+            if (!user) {
+                showError('Email atau password salah!');
+                return;
+            }
+
+            // Login success
+            currentUser = user;
+            isAdmin = (email === ADMIN_EMAIL);
+
+            // Clear form
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginPassword').value = '';
+
+            loginUser(currentUser);
+        }
+
+        // Generate avatar
+        function generateAvatar(letter) {
+            return `data:image/svg+xml;base64,${btoa(`
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+                    <circle cx="20" cy="20" r="20" fill="#667eea"/>
+                    <text x="50%" y="50%" font-family="Arial" font-size="18" fill="white" text-anchor="middle" dy=".3em">${letter}</text>
+                </svg>
+            `)}`;
+        }
+
+        // Login user
+        function loginUser(user) {
+            // Update UI
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('userEmail').textContent = user.email;
+            document.getElementById('userPhoto').src = generateAvatar(user.name.charAt(0).toUpperCase());
+            document.getElementById('userRole').textContent = isAdmin ? '👑 Administrator' : '👤 Pengunjung';
+
+            // Show/hide admin controls
+            if (isAdmin) {
+                document.getElementById('adminControls').classList.remove('hidden');
+                document.getElementById('menuAdminControls').classList.remove('hidden');
+                document.getElementById('eventAdminControls').classList.remove('hidden');
+                document.getElementById('readOnlyNotice').classList.add('hidden');
+            } else {
+                document.getElementById('adminControls').classList.add('hidden');
+                document.getElementById('menuAdminControls').classList.add('hidden');
+                document.getElementById('eventAdminControls').classList.add('hidden');
+                document.getElementById('readOnlyNotice').classList.remove('hidden');
+            }
+
+            // Hide auth, show app
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+
+            // Load data and initialize
+            loadData();
+            initializeMap();
+        }
+
+        // Logout
+        function logout() {
+            if (confirm('Yakin ingin logout?')) {
+                currentUser = null;
+                isAdmin = false;
+                document.getElementById('authScreen').classList.remove('hidden');
+                document.getElementById('mainApp').classList.add('hidden');
+                showLoginForm();
+            }
+        }
+
+        // Load data from localStorage
+        function loadData() {
+            const saved = localStorage.getItem('storeData');
+            if (saved) {
+                storeData = JSON.parse(saved);
+                if (isAdmin) {
+                    document.getElementById('storeName').value = storeData.name;
+                    document.getElementById('storeStatus').value = storeData.status;
+                }
+                updateStatusBadge();
+                renderMenuList();
+                renderEventList();
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('storeData', JSON.stringify(storeData));
+        }
+
+        // Check admin
+        function checkAdmin() {
+            if (!isAdmin) {
+                alert('❌ Hanya admin yang bisa melakukan perubahan!');
+                return false;
+            }
+            return true;
+        }
+
+        // Initialize map
+        let map;
+        let marker;
+
+        function initializeMap() {
+            map = L.map('map').setView([storeData.lat, storeData.lng], 15);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            updateMarker();
+
+            // Allow admin to change location by clicking
+            if (isAdmin) {
+                map.on('click', function(e) {
+                    storeData.lat = e.latlng.lat;
+                    storeData.lng = e.latlng.lng;
+                    saveData();
+                    updateMarker();
+                    alert('✅ Lokasi toko diupdate!');
+                });
+            }
+        }
+
+        // Red marker icon
+        const redIcon = L.icon({
+            iconUrl: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDMyIDQwIj48cGF0aCBmaWxsPSIjRUYzMzQwIiBkPSJNMTYgMEMxMC40ODYgMCA2IDQuNDg2IDYgMTBjMCA5IDEwIDIxIDEwIDIxczEwLTEyIDEwLTIxYzAtNS41MTQtNC40ODYtMTAtMTAtMTB6Ii8+PGNpcmNsZSBjeD0iMTYiIGN5PSIxMCIgcj0iNCIgZmlsbD0id2hpdGUiLz48L3N2Zz4=',
+            iconSize: [32, 40],
+            iconAnchor: [16, 40],
+            popupAnchor: [0, -40]
+        });
+
+        function updateStoreName() {
+            if (!checkAdmin()) return;
+
+            const name = document.getElementById('storeName').value.trim();
+            if (!name) {
+                alert('Nama toko tidak boleh kosong!');
+                return;
+            }
+
+            storeData.name = name;
+            saveData();
+            updateMarker();
+            alert('✅ Nama toko diupdate!');
+        }
+
+        function updateStoreStatus() {
+            if (!checkAdmin()) return;
+
+            storeData.status = document.getElementById('storeStatus').value;
+            saveData();
+            updateStatusBadge();
+            updateMarker();
+        }
+
+        function updateStatusBadge() {
+            const badge = document.getElementById('statusBadge');
+            if (storeData.status === 'open') {
+                badge.textContent = '● BUKA';
+                badge.className = 'status-badge status-open';
+            } else {
+                badge.textContent = '● TUTUP';
+                badge.className = 'status-badge status-closed';
+            }
+        }
+
+        function updateMarker() {
+            if (marker) {
+                map.removeLayer(marker);
+            }
+
+            const statusText = storeData.status === 'open' ? 
+                '<span style="color: #4caf50; font-weight: bold;">● BUKA</span>' : 
+                '<span style="color: #f44336; font-weight: bold;">● TUTUP</span>';
+
+            const popupContent = `
+                <div class="popup-content">
+                    <h3>${storeData.name}</h3>
+                    <p style="margin-bottom: 15px;">${statusText}</p>
+                    <a href="#" class="popup-btn" onclick="showMenu(); return false;">📋 Lihat Menu</a>
+                    <a href="#" class="popup-btn" onclick="showEvent(); return false;">🎉 Lihat Event</a>
+                </div>
+            `;
+
+            marker = L.marker([storeData.lat, storeData.lng], {icon: redIcon})
+                .addTo(map)
+                .bindPopup(popupContent)
+                .openPopup();
+        }
+
+        // Menu functions
+        function addMenu() {
+            if (!checkAdmin()) return;
+
+            const name = document.getElementById('menuName').value.trim();
+            const price = document.getElementById('menuPrice').value.trim();
+            const desc = document.getElementById('menuDesc').value.trim();
+
+            if (!name || !price) {
+                alert('Nama menu dan harga harus diisi!');
+                return;
+            }
+
+            storeData.menus.push({
+                id: Date.now(),
+                name: name,
+                price: price,
+                description: desc
+            });
+
+            saveData();
+            renderMenuList();
+
+            document.getElementById('menuName').value = '';
+            document.getElementById('menuPrice').value = '';
+            document.getElementById('menuDesc').value = '';
+
+            alert('✅ Menu ditambahkan!');
+        }
+
+        function deleteMenu(id) {
+            if (!checkAdmin()) return;
+
+            if (confirm('Hapus menu ini?')) {
+                storeData.menus = storeData.menus.filter(m => m.id !== id);
+                saveData();
+                renderMenuList();
+            }
+        }
+
+        function renderMenuList() {
+            const container = document.getElementById('menuList');
+            
+            if (storeData.menus.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>Belum ada menu tersedia.</p></div>';
+                return;
+            }
+
+            container.innerHTML = storeData.menus.map(menu => `
+                <div class="menu-item">
+                    <h4>${menu.name}</h4>
+                    <p><strong>${menu.price}</strong></p>
+                    <p>${menu.description}</p>
+                    ${isAdmin ? `
+                        <button class="btn btn-danger btn-small" onclick="deleteMenu(${menu.id})">Hapus</button>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Event functions
+        function addEvent() {
+            if (!checkAdmin()) return;
+
+            const name = document.getElementById('eventName').value.trim();
+            const date = document.getElementById('eventDate').value.trim();
+            const desc = document.getElementById('eventDesc').value.trim();
+
+            if (!name || !date) {
+                alert('Nama event dan tanggal harus diisi!');
+                return;
+            }
+
+            storeData.events.push({
+                id: Date.now(),
+                name: name,
+                date: date,
+                description: desc
+            });
+
+            saveData();
+            renderEventList();
+
+            document.getElementById('eventName').value = '';
+            document.getElementById('eventDate').value = '';
+            document.getElementById('eventDesc').value = '';
+
+            alert('✅ Event ditambahkan!');
+        }
+
+        function deleteEvent(id) {
+            if (!checkAdmin()) return;
+
+            if (confirm('Hapus event ini?')) {
+                storeData.events = storeData.events.filter(e => e.id !== id);
+                saveData();
+                renderEventList();
+            }
+        }
+
+        function renderEventList() {
+            const container = document.getElementById('eventList');
+            
+            if (storeData.events.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>Belum ada event tersedia.</p></div>';
+                return;
+            }
+
+            container.innerHTML = storeData.events.map(event => `
+                <div class="event-item">
+                    <h4>${event.name}</h4>
+                    <p><strong>📅 ${event.date}</strong></p>
+                    <p>${event.description}</p>
+                    ${isAdmin ? `
+                        <button class="btn btn-danger btn-small" onclick="deleteEvent(${event.id})">Hapus</button>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Modal functions
+        function showMenu() {
+            const modal = document.getElementById('menuModal');
+            const content = document.getElementById('menuModalContent');
+            
+            if (storeData.menus.length === 0) {
+                content.innerHTML = '<div class="empty-state"><p>Belum ada menu tersedia.</p></div>';
+            } else {
+                content.innerHTML = storeData.menus.map(menu => `
+                    <div class="menu-item">
+                        <h4>${menu.name}</h4>
+                        <p><strong>${menu.price}</strong></p>
+                        <p>${menu.description}</p>
+                    </div>
+                `).join('');
+            }
+            
+            modal.classList.add('active');
+        }
+
+        function showEvent() {
+            const modal = document.getElementById('eventModal');
+            const content = document.getElementById('eventModalContent');
+            
+            if (storeData.events.length === 0) {
+                content.innerHTML = '<div class="empty-state"><p>Belum ada event yang tersedia.</p></div>';
+            } else {
+                content.innerHTML = storeData.events.map(event => `
+                    <div class="event-item">
+                        <h4>${event.name}</h4>
+                        <p><strong>📅 ${event.date}</strong></p>
+                        <p>${event.description}</p>
+                    </div>
+                `).join('');
+            }
+            
+            modal.classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>
